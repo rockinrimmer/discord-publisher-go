@@ -25,7 +25,12 @@ var publishQueue = make(chan *discordgo.MessageCreate, 100)
 
 func main() {
 
-	switch os.Args[1] {
+	subCommand := ""
+	if len(os.Args) > 1 {
+		subCommand = os.Args[1]
+	}
+
+	switch subCommand {
 	case "version":
 		fmt.Printf("Discord Publisher Go %s, commit %s, built at %s", version, commit, date)
 		os.Exit(0)
