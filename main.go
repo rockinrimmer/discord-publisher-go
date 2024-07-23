@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"os"
@@ -12,27 +13,40 @@ import (
 	"time"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 var watchingServerIds []string
 var watchingChannelIds []string
 var publishQueue = make(chan *discordgo.MessageCreate, 100)
 
 func main() {
-	log.SetOutput(os.Stdout)
-	serverIds, channelIds, token, debug := parseFlags()
-	watchingServerIds = serverIds
-	watchingChannelIds = channelIds
 
-	log.Println("Starting...")
-	session := openSession(token, debug)
-	defer closeSession(session)
+	switch os.Args[1] {
+	case "version":
+		fmt.Printf("Discord Publisher Go %s, commit %s, built at %s", version, commit, date)
+		os.Exit(0)
+	default:
+		log.SetOutput(os.Stdout)
+		serverIds, channelIds, token, debug := parseFlags()
+		watchingServerIds = serverIds
+		watchingChannelIds = channelIds
 
-	// Trigger reader to wait for messages and publish them
-	go publishQueueReader(session)
+		log.Println("Starting...")
+		session := openSession(token, debug)
+		defer closeSession(session)
 
-	// Block until killed
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
+		// Trigger reader to wait for messages and publish them
+		go publishQueueReader(session)
+
+		// Block until killed
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+		<-sc
+	}
 }
 
 func publishQueueReader(s *discordgo.Session) {
