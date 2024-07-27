@@ -1,4 +1,4 @@
-FROM golang:1.22 as app-builder
+FROM golang:1.22 AS app-builder
 WORKDIR /go/src/app
 COPY . .
 # Static build required so that we can safely copy the binary over.
