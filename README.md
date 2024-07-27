@@ -24,7 +24,13 @@ discord-publisher-go version
 
 ### Setup
 
-TBD
+Create an app in Discord, see [here](https://discord.com/developers/docs/quick-start/getting-started) for how.
+
+When selecting permissions in OAuth2 menu you should select `bot` and then `Manage Messages` and `Send Messages` permissions.
+
+Then please ensure that the channels you wish to have messages published from allow these permissions for your bot.
+
+Channels you specify using the `Channel IDs` parameter must be announcement channels.
 
 ## Releasing
 
