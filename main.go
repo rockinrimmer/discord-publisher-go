@@ -67,7 +67,7 @@ func publishQueueReader(s *discordgo.Session) {
 		if err != nil {
 			log.Println("Error publishing message", err)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
