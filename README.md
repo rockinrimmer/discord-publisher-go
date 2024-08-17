@@ -15,12 +15,13 @@ discord-publisher-go version
 
 ### Parameters
 
-| Parameter     | Flag     | Environment Variable | Description                               |
-|---------------|----------|----------------------|-------------------------------------------|
-| Server IDs    | servers  | DISCORD_SERVER_IDS   | Discord server IDs to listen to as a CSV  |
-| Channel IDs   | channels | DISCORD_CHANNEL_IDS  | Discord channel IDs to listen to as a CSV |
-| Discord Token | token    | DISCORD_TOKEN        | Discord bot token                         |
-| Debug Logging | debug    |                      | Enable debug logging                      |
+| Parameter     | Flag     | Environment Variable  | Description                                          |
+|---------------|----------|-----------------------|------------------------------------------------------|
+| Server IDs    | servers  | DISCORD_SERVER_IDS    | Discord server IDs to listen to as a CSV             |
+| Channel IDs   | channels | DISCORD_CHANNEL_IDS   | Discord channel IDs to listen to as a CSV            |
+| Discord Token | token    | DISCORD_TOKEN         | Discord bot token                                    |
+| Publish Delay | delay    | DISCORD_PUBLISH_DELAY | How many seconds to wait between publishing messages |
+| Debug Logging | debug    |                       | Enable debug logging                                 |
 
 ### Setup
 
@@ -37,7 +38,7 @@ Channels you specify using the `Channel IDs` parameter must be announcement chan
 Create a new git tag and run [goreleaser](https://goreleaser.com/)
 
 ```shell
-goreleaser release
+goreleaser release --clean
 ```
 
 ## Future Improvements TODO

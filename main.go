@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -36,7 +37,7 @@ func main() {
 		os.Exit(0)
 	default:
 		log.SetOutput(os.Stdout)
-		serverIds, channelIds, token, debug := parseFlags()
+		serverIds, channelIds, token, publishDelaySeconds, debug := parseFlags()
 		watchingServerIds = serverIds
 		watchingChannelIds = channelIds
 
@@ -45,7 +46,7 @@ func main() {
 		defer closeSession(session)
 
 		// Trigger reader to wait for messages and publish them
-		go publishQueueReader(session)
+		go publishQueueReader(session, publishDelaySeconds)
 
 		// Block until killed
 		sc := make(chan os.Signal, 1)
@@ -54,7 +55,7 @@ func main() {
 	}
 }
 
-func publishQueueReader(s *discordgo.Session) {
+func publishQueueReader(s *discordgo.Session, delaySeconds int) {
 
 	log.Println("Listening on publish queue")
 
@@ -67,15 +68,17 @@ func publishQueueReader(s *discordgo.Session) {
 		if err != nil {
 			log.Println("Error publishing message", err)
 		}
-		time.Sleep(3 * time.Second)
+		log.Printf("Published message %v now sleeping for %v seconds\n", m.ID, delaySeconds)
+		time.Sleep(time.Duration(delaySeconds) * time.Second)
 	}
 }
 
-func parseFlags() (watchingServerIds []string, channelIds []string, discordToken string, debug bool) {
+func parseFlags() (watchingServerIds []string, channelIds []string, discordToken string, publishDelaySeconds int, debug bool) {
 	serverIdsString := flag.String("servers", os.Getenv("DISCORD_SERVER_IDS"), "Discord server IDs to listen to as a CSV")
 	channelIdsString := flag.String("channels", os.Getenv("DISCORD_CHANNEL_IDS"), "Discord channel IDs to listen to as a CSV")
 	flag.StringVar(&discordToken, "token", os.Getenv("DISCORD_TOKEN"), "Discord bot token")
 	flag.BoolVar(&debug, "debug", false, "Enable debug logging")
+	flag.IntVar(&publishDelaySeconds, "delay", 0, "Delay between publishing messages")
 	flag.Parse()
 
 	watchingServerIds = strings.Split(*serverIdsString, ",")
@@ -94,7 +97,17 @@ func parseFlags() (watchingServerIds []string, channelIds []string, discordToken
 		panic("No discord token set, must set 'token' flag or environment variable DISCORD_TOKEN")
 	}
 
-	return watchingServerIds, watchingChannelIds, discordToken, debug
+	if delay, exists := os.LookupEnv("DISCORD_PUBLISH_DELAY"); exists && publishDelaySeconds == 0 {
+		intDelay, err := strconv.ParseInt(delay, 10, 0)
+		if err != nil {
+			panic("Invalid value for DISCORD_PUBLISH_DELAY")
+		}
+
+		publishDelaySeconds = int(intDelay)
+	}
+	log.Printf("Publishing delay of %vs\n", publishDelaySeconds)
+
+	return watchingServerIds, watchingChannelIds, discordToken, publishDelaySeconds, debug
 }
 
 func ready(s *discordgo.Session, event *discordgo.Ready) {
